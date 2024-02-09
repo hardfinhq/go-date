@@ -2,6 +2,7 @@
 
 [![GoDoc][1]][2]
 [![Go ReportCard][3]][4]
+[![Build Status][8]][9]
 
 The `go-date` package provides a dedicated `Date{}` struct to emulate the
 standard library `time.Time{}` behavior.
@@ -43,3 +44,5 @@ historical date ranges.) Some existing packages:
 [5]: https://pkg.go.dev/github.com/rickb777/date
 [6]: https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar
 [7]: https://pkg.go.dev/github.com/fxtlabs/date
+[8]: https://github.com/hardfinhq/go-date/actions/workflows/ci.yaml/badge.svg?branch=main
+[9]: https://github.com/hardfinhq/go-date/actions/workflows/ci.yaml
