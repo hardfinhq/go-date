@@ -195,11 +195,13 @@ overrides:
     overrides:
       - go_type:
           import: github.com/hardfinhq/go-date
+          package: date
           type: NullDate
         db_type: date
         nullable: true
       - go_type:
           import: github.com/hardfinhq/go-date
+          package: date
           type: Date
         db_type: date
         nullable: false
