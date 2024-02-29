@@ -59,6 +59,16 @@ func TestNullTimeFromPtr(t *testing.T) {
 	nt = date.NullTimeFromPtr(d, date.OptConvertTimezone(tz))
 	expected = sql.NullTime{Time: time.Date(2000, time.January, 1, 0, 0, 0, 0, tz), Valid: true}
 	assert.Equal(expected, nt)
+
+	nt = date.NullTimeFromPtr(
+		d,
+		date.OptConvertHour(12),
+		date.OptConvertMinute(30),
+		date.OptConvertSecond(35),
+		date.OptConvertNanosecond(123456789),
+	)
+	expected = sql.NullTime{Time: time.Date(2000, time.January, 1, 12, 30, 35, 123456789, time.UTC), Valid: true}
+	assert.Equal(expected, nt)
 }
 
 func TestFromTime(base *testing.T) {
@@ -72,16 +82,32 @@ func TestFromTime(base *testing.T) {
 
 	cases := []testCase{
 		{
-			Time:  "2020-05-11T07:10:55.209309302Z",
-			Error: "timestamp contains more than just date information; 2020-05-11T07:10:55.209309302Z",
-		},
-		{
 			Time: "2022-01-31T00:00:00.000Z",
 			Date: date.Date{Year: 2022, Month: time.January, Day: 31},
 		},
 		{
+			Time:  "2020-05-11T07:10:55.209309302Z",
+			Error: "timestamp contains more than just date information; 2020-05-11T07:10:55.209309302Z",
+		},
+		{
 			Time:  "2022-01-31T00:00:00.000-05:00",
 			Error: "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
+		},
+		{
+			Time:  "2020-05-11T00:00:00.000000001Z",
+			Error: "timestamp contains more than just date information; 2020-05-11T00:00:00.000000001Z",
+		},
+		{
+			Time:  "2020-05-11T00:00:01Z",
+			Error: "timestamp contains more than just date information; 2020-05-11T00:00:01Z",
+		},
+		{
+			Time:  "2020-05-11T00:01:00Z",
+			Error: "timestamp contains more than just date information; 2020-05-11T00:01:00Z",
+		},
+		{
+			Time:  "2020-05-11T01:00:00Z",
+			Error: "timestamp contains more than just date information; 2020-05-11T01:00:00Z",
 		},
 	}
 

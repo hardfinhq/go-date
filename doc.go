@@ -25,5 +25,5 @@
 // Instead, common convention is to use a `time.Time{}` with only the year,
 // month, and day set. For example, this convention is followed when a
 // timestamp of the form YYYY-MM-DD is parsed via
-// `time.Parse(time.DateOnly, s)`.
+// `time.Parse(time.DateOnly, value)`.
 package date

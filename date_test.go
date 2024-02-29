@@ -163,38 +163,6 @@ func TestDate_AddMonthsStdlib(base *testing.T) {
 	}
 }
 
-func TestDate_MonthEnd(base *testing.T) {
-	base.Parallel()
-
-	type testCase struct {
-		Date     string
-		Expected string
-	}
-
-	cases := []testCase{
-		{Date: "2020-02-16", Expected: "2020-02-29"},
-		{Date: "2021-02-16", Expected: "2021-02-28"},
-		{Date: "2023-01-01", Expected: "2023-01-31"},
-	}
-	for i := range cases {
-		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
-		//       `range`) to avoid capturing reference to loop variable.
-		tc := cases[i]
-		base.Run(tc.Date, func(t *testing.T) {
-			t.Parallel()
-			assert := testifyrequire.New(t)
-
-			d, err := date.FromString(tc.Date)
-			assert.Nil(err)
-			expected, err := date.FromString(tc.Expected)
-			assert.Nil(err)
-
-			shifted := d.MonthEnd()
-			assert.Equal(expected, shifted)
-		})
-	}
-}
-
 func TestDate_AddYears(base *testing.T) {
 	base.Parallel()
 
@@ -281,94 +249,6 @@ func TestDate_AddYearsStdlib(base *testing.T) {
 	}
 }
 
-func TestDate_String(base *testing.T) {
-	base.Parallel()
-
-	type testCase struct {
-		Date     *date.Date
-		Expected string
-	}
-
-	cases := []testCase{
-		{Date: &date.Date{Year: 2020, Month: time.May, Day: 11}, Expected: "2020-05-11"},
-		{Date: &date.Date{Year: 2022, Month: time.January, Day: 31}, Expected: "2022-01-31"},
-		{Date: &date.Date{Year: 1999, Month: time.December, Day: 24}, Expected: "1999-12-24"},
-		{Date: nil, Expected: ""},
-	}
-
-	for i := range cases {
-		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
-		//       `range`) to avoid capturing reference to loop variable.
-		tc := cases[i]
-		base.Run(tc.Expected, func(t *testing.T) {
-			t.Parallel()
-			assert := testifyrequire.New(t)
-
-			assert.Equal(tc.Expected, tc.Date.String())
-		})
-	}
-}
-
-func TestDate_Before(t *testing.T) {
-	t.Parallel()
-	assert := testifyrequire.New(t)
-
-	d1 := date.Date{Year: 2020, Month: time.May, Day: 11}
-	d2 := date.Date{Year: 2022, Month: time.May, Day: 11}
-	assert.True(d1.Before(d2))
-	assert.False(d2.Before(d1))
-	assert.False(d2.Before(d2))
-	assert.False(d1.Before(d1))
-
-	d1 = date.Date{Year: 2022, Month: time.April, Day: 11}
-	d2 = date.Date{Year: 2022, Month: time.May, Day: 11}
-	assert.True(d1.Before(d2))
-	assert.False(d2.Before(d1))
-
-	d1 = date.Date{Year: 2022, Month: time.April, Day: 11}
-	d2 = date.Date{Year: 2022, Month: time.April, Day: 12}
-	assert.True(d1.Before(d2))
-	assert.False(d2.Before(d1))
-}
-
-func TestDate_After(t *testing.T) {
-	t.Parallel()
-	assert := testifyrequire.New(t)
-
-	d1 := date.Date{Year: 2023, Month: time.July, Day: 27}
-	d2 := date.Date{Year: 2018, Month: time.January, Day: 1}
-	assert.True(d1.After(d2))
-	assert.False(d2.After(d1))
-	assert.False(d2.After(d2))
-	assert.False(d1.After(d1))
-}
-
-func TestDate_Equal(t *testing.T) {
-	t.Parallel()
-	assert := testifyrequire.New(t)
-
-	d1 := date.Date{Year: 2023, Month: time.July, Day: 27}
-	d2 := date.Date{Year: 2018, Month: time.January, Day: 1}
-	d3 := date.Date{Year: 2023, Month: time.July, Day: 27}
-	assert.True(d1.Equal(d1))
-	assert.True(d2.Equal(d2))
-	assert.True(d1.Equal(d3))
-	assert.False(d2.Equal(d1))
-	assert.False(d1.Equal(d2))
-}
-
-func TestDate_IsZero(t *testing.T) {
-	t.Parallel()
-	assert := testifyrequire.New(t)
-
-	d1 := date.Date{}
-	d2 := date.Date{Year: 2006, Month: time.May, Day: 25}
-	d3 := date.Date{Year: 2006}
-	assert.True(d1.IsZero())
-	assert.False(d2.IsZero())
-	assert.False(d3.IsZero())
-}
-
 func TestDate_Sub(base *testing.T) {
 	base.Parallel()
 
@@ -428,6 +308,146 @@ func TestDate_Sub_Panic(t *testing.T) {
 	assert.Equal("duration is not a whole number of days; duration=-2562047h47m16.854775808s", fmt.Sprintf("%v", err))
 }
 
+func TestDate_MonthStart(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     string
+		Expected string
+	}
+
+	cases := []testCase{
+		{Date: "2020-02-16", Expected: "2020-02-01"},
+		{Date: "2021-02-16", Expected: "2021-02-01"},
+		{Date: "2023-01-01", Expected: "2023-01-01"},
+	}
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Date, func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			d, err := date.FromString(tc.Date)
+			assert.Nil(err)
+			expected, err := date.FromString(tc.Expected)
+			assert.Nil(err)
+
+			shifted := d.MonthStart()
+			assert.Equal(expected, shifted)
+		})
+	}
+}
+
+func TestDate_MonthEnd(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     string
+		Expected string
+	}
+
+	cases := []testCase{
+		{Date: "2020-02-16", Expected: "2020-02-29"},
+		{Date: "2021-02-16", Expected: "2021-02-28"},
+		{Date: "2023-01-01", Expected: "2023-01-31"},
+	}
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Date, func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			d, err := date.FromString(tc.Date)
+			assert.Nil(err)
+			expected, err := date.FromString(tc.Expected)
+			assert.Nil(err)
+
+			shifted := d.MonthEnd()
+			assert.Equal(expected, shifted)
+		})
+	}
+}
+
+func TestDate_Before(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d1 := date.Date{Year: 2020, Month: time.May, Day: 11}
+	d2 := date.Date{Year: 2022, Month: time.May, Day: 11}
+	assert.True(d1.Before(d2))
+	assert.False(d2.Before(d1))
+	assert.False(d2.Before(d2))
+	assert.False(d1.Before(d1))
+
+	d1 = date.Date{Year: 2022, Month: time.April, Day: 11}
+	d2 = date.Date{Year: 2022, Month: time.May, Day: 11}
+	assert.True(d1.Before(d2))
+	assert.False(d2.Before(d1))
+
+	d1 = date.Date{Year: 2022, Month: time.April, Day: 11}
+	d2 = date.Date{Year: 2022, Month: time.April, Day: 12}
+	assert.True(d1.Before(d2))
+	assert.False(d2.Before(d1))
+}
+
+func TestDate_After(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d1 := date.Date{Year: 2023, Month: time.July, Day: 27}
+	d2 := date.Date{Year: 2018, Month: time.January, Day: 1}
+	assert.True(d1.After(d2))
+	assert.False(d2.After(d1))
+	assert.False(d2.After(d2))
+	assert.False(d1.After(d1))
+}
+
+func TestDate_Equal(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d1 := date.Date{Year: 2023, Month: time.July, Day: 27}
+	d2 := date.Date{Year: 2018, Month: time.January, Day: 1}
+	d3 := date.Date{Year: 2023, Month: time.July, Day: 27}
+	assert.True(d1.Equal(d1))
+	assert.True(d2.Equal(d2))
+	assert.True(d1.Equal(d3))
+	assert.False(d2.Equal(d1))
+	assert.False(d1.Equal(d2))
+}
+
+func TestDate_Compare(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d1 := date.Date{Year: 2023, Month: time.July, Day: 27}
+	d2 := date.Date{Year: 2018, Month: time.January, Day: 1}
+	d3 := date.Date{Year: 2023, Month: time.July, Day: 27}
+	d4 := date.Date{Year: 2023, Month: time.August, Day: 27}
+	assert.Equal(0, d1.Compare(d1))
+	assert.Equal(0, d2.Compare(d2))
+	assert.Equal(0, d1.Compare(d3))
+	assert.Equal(-1, d2.Compare(d1))
+	assert.Equal(1, d1.Compare(d2))
+	assert.Equal(-1, d1.Compare(d4))
+}
+
+func TestDate_IsZero(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d1 := date.Date{}
+	d2 := date.Date{Year: 2006, Month: time.May, Day: 25}
+	d3 := date.Date{Year: 2006}
+	assert.True(d1.IsZero())
+	assert.False(d2.IsZero())
+	assert.False(d3.IsZero())
+}
+
 func TestDate_ToTime(t *testing.T) {
 	t.Parallel()
 	assert := testifyrequire.New(t)
@@ -442,6 +462,78 @@ func TestDate_ToTime(t *testing.T) {
 	converted = d.ToTime(date.OptConvertTimezone(tz))
 	expected = time.Time(time.Date(2006, time.February, 16, 0, 0, 0, 0, tz))
 	assert.Equal(expected, converted)
+}
+
+func TestDate_ISOWeek(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d := date.Date{Year: 2006, Month: time.February, Day: 16}
+	year, week := d.ISOWeek()
+	assert.Equal(2006, year)
+	assert.Equal(7, week)
+}
+
+func TestDate_Weekday(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     date.Date
+		Expected time.Weekday
+	}
+
+	cases := []testCase{
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 1}, Expected: time.Sunday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 2}, Expected: time.Monday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 3}, Expected: time.Tuesday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 4}, Expected: time.Wednesday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 5}, Expected: time.Thursday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 6}, Expected: time.Friday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 7}, Expected: time.Saturday},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 8}, Expected: time.Sunday},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Date.String(), func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			weekday := tc.Date.Weekday()
+			assert.Equal(tc.Expected, weekday)
+		})
+	}
+}
+
+func TestDate_MarshalText(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Name     string
+		Date     date.Date
+		Expected string
+	}
+
+	cases := []testCase{
+		{Name: "Remote past", Date: date.Date{Year: 1997, Month: time.July, Day: 15}, Expected: "1997-07-15"},
+		{Name: "Recent past", Date: date.Date{Year: 2020, Month: time.February, Day: 20}, Expected: "2020-02-20"},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			asBytes, err := tc.Date.MarshalText()
+			assert.Nil(err)
+			assert.Equal(tc.Expected, string(asBytes))
+		})
+	}
 }
 
 func TestDate_MarshalJSON(base *testing.T) {
@@ -470,6 +562,44 @@ func TestDate_MarshalJSON(base *testing.T) {
 			asBytes, err := json.Marshal(tc.Date)
 			assert.Nil(err)
 			assert.Equal(tc.Expected, string(asBytes))
+		})
+	}
+}
+
+func TestDate_UnmarshalText(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Input []byte
+		Date  date.Date
+		Error string
+	}
+
+	cases := []testCase{
+		{Input: []byte(`x`), Error: `parsing time "x" as "2006-01-02": cannot parse "x" as "2006"`},
+		{Input: []byte(`10`), Error: `parsing time "10" as "2006-01-02": cannot parse "10" as "2006"`},
+		{Input: []byte("01/26/2018"), Error: `parsing time "01/26/2018" as "2006-01-02": cannot parse "01/26/2018" as "2006"`},
+		{Input: []byte("1997-07-15"), Date: date.Date{Year: 1997, Month: time.July, Day: 15}},
+		{Input: []byte("2020-02-20"), Date: date.Date{Year: 2020, Month: time.February, Day: 20}},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(string(tc.Input), func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			d := date.Date{}
+			err := d.UnmarshalText(tc.Input)
+			if err != nil {
+				assert.Equal(tc.Error, fmt.Sprintf("%v", err))
+				assert.Equal(date.Date{}, d)
+			} else {
+				assert.Equal("", tc.Error)
+				assert.Equal(tc.Date, d)
+			}
 		})
 	}
 }
@@ -552,4 +682,58 @@ func TestDate_Value(t *testing.T) {
 	assert.Nil(err)
 	expected := time.Date(1991, time.April, 26, 0, 0, 0, 0, time.UTC)
 	assert.Equal(expected, v)
+}
+
+func TestDate_String(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     date.Date
+		Expected string
+	}
+
+	cases := []testCase{
+		{Date: date.Date{Year: 2020, Month: time.May, Day: 11}, Expected: "2020-05-11"},
+		{Date: date.Date{Year: 2022, Month: time.January, Day: 31}, Expected: "2022-01-31"},
+		{Date: date.Date{Year: 1999, Month: time.December, Day: 24}, Expected: "1999-12-24"},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Expected, func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			assert.Equal(tc.Expected, tc.Date.String())
+		})
+	}
+}
+
+func TestDate_GoString(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     date.Date
+		Expected string
+	}
+
+	cases := []testCase{
+		{Date: date.Date{Year: 2020, Month: time.May, Day: 11}, Expected: "date.NewDate(2020, time.May, 11)"},
+		{Date: date.Date{Year: 2022, Month: time.January, Day: 31}, Expected: "date.NewDate(2022, time.January, 31)"},
+		{Date: date.Date{Year: 1999, Month: time.December, Day: 24}, Expected: "date.NewDate(1999, time.December, 24)"},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Expected, func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			assert.Equal(tc.Expected, tc.Date.GoString())
+		})
+	}
 }
