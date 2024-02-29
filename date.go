@@ -17,23 +17,30 @@ package date
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding"
 	"encoding/json"
 	"fmt"
 	"time"
 )
 
 // NOTE: Ensure that
-// - `*Date` satisfies `fmt.Stringer`.
+// - `Date` satisfies `fmt.Stringer`.
+// - `Date` satisfies `fmt.GoStringer`.
+// - `Date` satisfies `encoding.TextMarshaler`.
 // - `Date` satisfies `json.Marshaler`.
+// - `*Date` satisfies `encoding.TextUnmarshaler`.
 // - `*Date` satisfies `json.Unmarshaler`.
 // - `*Date` satisfies `sql.Scanner`.
 // - `Date` satisfies `driver.Valuer`.
 var (
-	_ fmt.Stringer     = (*Date)(nil)
-	_ json.Marshaler   = Date{}
-	_ json.Unmarshaler = (*Date)(nil)
-	_ sql.Scanner      = (*Date)(nil)
-	_ driver.Valuer    = Date{}
+	_ fmt.Stringer             = Date{}
+	_ fmt.GoStringer           = Date{}
+	_ encoding.TextMarshaler   = Date{}
+	_ json.Marshaler           = Date{}
+	_ encoding.TextUnmarshaler = (*Date)(nil)
+	_ json.Unmarshaler         = (*Date)(nil)
+	_ sql.Scanner              = (*Date)(nil)
+	_ driver.Valuer            = Date{}
 )
 
 // Date is a simple date (i.e. without timestamp). This is intended to be
@@ -103,12 +110,6 @@ func monthsChange(month time.Month, monthDelta int) (time.Month, int) {
 	return time.Month(monthsInYear), yearDelta
 }
 
-// MonthEnd returns the last date in the month of the current date.
-func (d Date) MonthEnd() Date {
-	endDay := daysIn(d.Month, d.Year)
-	return Date{Year: d.Year, Month: d.Month, Day: endDay}
-}
-
 // AddYears returns the date corresponding to adding the given number of
 // years, using `time.Time{}.AddDate()` from the standard library. This may
 // "overshoot" if the target date is not a valid date in that month, e.g.
@@ -123,7 +124,10 @@ func (d Date) MonthEnd() Date {
 // NOTE: This behavior is very similar to but distinct from
 // `time.Time{}.AddDate()` specialized to `years` only.
 func (d Date) AddYears(years int) Date {
-	return d.AddMonths(12 * years)
+	updatedMonth := d.Month
+	updatedYear := d.Year + years
+	updatedDay := minInt(d.Day, daysIn(updatedMonth, updatedYear))
+	return Date{Year: updatedYear, Month: updatedMonth, Day: updatedDay}
 }
 
 // AddYearsStdlib returns the date corresponding to adding the given number of
@@ -140,44 +144,8 @@ func (d Date) AddYears(years int) Date {
 // NOTE: This behavior is very similar to but distinct from
 // `time.Time{}.AddDate()` specialized to `years` only.
 func (d Date) AddYearsStdlib(years int) Date {
-	return d.AddMonthsStdlib(12 * years)
-}
-
-// String implements `fmt.Stringer`.
-func (d *Date) String() string {
-	if d == nil {
-		return ""
-	}
-
-	return d.Format(time.DateOnly)
-}
-
-// Before returns true if the date is before the other date.
-func (d Date) Before(other Date) bool {
-	if d.Year != other.Year {
-		return d.Year < other.Year
-	}
-
-	if d.Month != other.Month {
-		return d.Month < other.Month
-	}
-
-	return d.Day < other.Day
-}
-
-// After returns true if the date is after the other date.
-func (d Date) After(other Date) bool {
-	return other.Before(d)
-}
-
-// Equal returns true if the date is equal to the other date.
-func (d Date) Equal(other Date) bool {
-	return d.Year == other.Year && d.Month == other.Month && d.Day == other.Day
-}
-
-// IsZero returns true if the date is the zero value.
-func (d Date) IsZero() bool {
-	return d.Year == 0 && d.Month == 0 && d.Day == 0
+	t := d.ToTime().AddDate(years, 0, 0)
+	return Date{Year: t.Year(), Month: t.Month(), Day: t.Day()}
 }
 
 // Sub returns the number of days `d - other`; this converts both dates to
@@ -206,6 +174,71 @@ func (d Date) SubErr(other Date) (int64, error) {
 	return int64(days), nil
 }
 
+// MonthStart returns the first date in the month of the current date.
+func (d Date) MonthStart() Date {
+	return Date{Year: d.Year, Month: d.Month, Day: 1}
+}
+
+// MonthEnd returns the last date in the month of the current date.
+func (d Date) MonthEnd() Date {
+	endDay := daysIn(d.Month, d.Year)
+	return Date{Year: d.Year, Month: d.Month, Day: endDay}
+}
+
+// Before returns true if the date is before the other date.
+func (d Date) Before(other Date) bool {
+	if d.Year != other.Year {
+		return d.Year < other.Year
+	}
+
+	if d.Month != other.Month {
+		return d.Month < other.Month
+	}
+
+	return d.Day < other.Day
+}
+
+// After returns true if the date is after the other date.
+func (d Date) After(other Date) bool {
+	return other.Before(d)
+}
+
+// Equal returns true if the date is equal to the other date.
+func (d Date) Equal(other Date) bool {
+	return d.Year == other.Year && d.Month == other.Month && d.Day == other.Day
+}
+
+func compareInt(i1, i2 int) int {
+	if i1 < i2 {
+		return -1
+	}
+
+	if i1 > i2 {
+		return 1
+	}
+
+	return 0
+}
+
+// Compare compares the date d with other. If d is before other, it returns
+// -1; if d is after other, it returns +1; if they're the same, it returns 0.
+func (d Date) Compare(other Date) int {
+	if d.Year != other.Year {
+		return compareInt(d.Year, other.Year)
+	}
+
+	if d.Month != other.Month {
+		return compareInt(int(d.Month), int(other.Month))
+	}
+
+	return compareInt(d.Day, other.Day)
+}
+
+// IsZero returns true if the date is the zero value.
+func (d Date) IsZero() bool {
+	return d.Year == 0 && d.Month == 0 && d.Day == 0
+}
+
 // ToTime converts the date to a native Go `time.Time`; the convention in Go is
 // that a **date-only** is parsed (via `time.DateOnly`) as
 // `time.Date(YYYY, MM, DD, 0, 0, 0, 0, time.UTC)`.
@@ -215,13 +248,43 @@ func (d Date) ToTime(opts ...ConvertOption) time.Time {
 		opt(&cc)
 	}
 
-	return time.Date(d.Year, d.Month, d.Day, 0, 0, 0, 0, cc.Timezone)
+	return time.Date(d.Year, d.Month, d.Day, cc.Hour, cc.Minute, cc.Second, cc.Nanosecond, cc.Timezone)
+}
+
+// ISOWeek returns the ISO 8601 year and week number in which `d` occurs.
+// Week ranges from 1 to 53. Jan 01 to Jan 03 of year `n` might belong to
+// week 52 or 53 of year `n-1`, and Dec 29 to Dec 31 might belong to week 1
+// of year `n+1`.
+func (d Date) ISOWeek() (year, week int) {
+	return d.ToTime().ISOWeek()
+}
+
+// Weekday returns the day of the week specified by `d`.
+func (d Date) Weekday() time.Weekday {
+	return d.ToTime().Weekday()
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (d Date) MarshalText() ([]byte, error) {
+	return []byte(d.String()), nil
 }
 
 // MarshalJSON implements `json.Marshaler`; formats the date as YYYY-MM-DD.
 func (d Date) MarshalJSON() ([]byte, error) {
 	s := d.String()
 	return json.Marshal(s)
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface. The time
+// must be in the format YYYY-MM-DD.
+func (d *Date) UnmarshalText(data []byte) error {
+	parsed, err := FromString(string(data))
+	if err != nil {
+		return err
+	}
+
+	*d = parsed
+	return nil
 }
 
 // UnmarshalJSON implements `json.Unmarshaler`; parses the date as YYYY-MM-DD.
@@ -268,9 +331,19 @@ func (d Date) Value() (driver.Value, error) {
 	return d.ToTime(), nil
 }
 
+// String implements `fmt.Stringer`.
+func (d Date) String() string {
+	return d.Format(time.DateOnly)
+}
+
 // Format returns a textual representation of the date value formatted according
 // to the provided layout. This uses `time.Time{}.Format()` directly and is
 // provided here for convenience.
 func (d Date) Format(layout string) string {
 	return d.ToTime().Format(layout)
+}
+
+// GoString implements `fmt.GoStringer`.
+func (d Date) GoString() string {
+	return fmt.Sprintf("date.NewDate(%d, time.%s, %d)", d.Year, d.Month, d.Day)
 }

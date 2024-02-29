@@ -22,12 +22,54 @@ import (
 
 // ConvertConfig helps customize the behavior of conversion functions like
 // `NullTimeFromPtr()`.
+//
+// It allows setting the fields in a `time.Time{}` **other** than year, month,
+// and day (i.e. the fields that aren't present in a date). By default, these
+// are:
+// - hour=0
+// - minute=0
+// - second=0
+// - nanosecond=0
+// - timezone/loc=time.UTC
 type ConvertConfig struct {
-	Timezone *time.Location
+	Hour       int
+	Minute     int
+	Second     int
+	Nanosecond int
+	Timezone   *time.Location
 }
 
 // ConvertOption defines a function that will be applied to a convert config.
 type ConvertOption func(*ConvertConfig)
+
+// OptConvertHour returns an option that sets the hour on a convert config.
+func OptConvertHour(hour int) ConvertOption {
+	return func(cc *ConvertConfig) {
+		cc.Hour = hour
+	}
+}
+
+// OptConvertMinute returns an option that sets the minute on a convert config.
+func OptConvertMinute(minute int) ConvertOption {
+	return func(cc *ConvertConfig) {
+		cc.Minute = minute
+	}
+}
+
+// OptConvertSecond returns an option that sets the second on a convert config.
+func OptConvertSecond(second int) ConvertOption {
+	return func(cc *ConvertConfig) {
+		cc.Second = second
+	}
+}
+
+// OptConvertNanosecond returns an option that sets the nanosecond on a convert
+// config.
+func OptConvertNanosecond(nanosecond int) ConvertOption {
+	return func(cc *ConvertConfig) {
+		cc.Nanosecond = nanosecond
+	}
+}
 
 // OptConvertTimezone returns an option that sets the timezone on a convert
 // config.
