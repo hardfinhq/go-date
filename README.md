@@ -3,6 +3,7 @@
 [![GoDoc][1]][2]
 [![Go ReportCard][3]][4]
 [![Build Status][8]][9]
+[![codecov][12]][13]
 
 The `go-date` package provides a dedicated `Date{}` struct to emulate the
 standard library `time.Time{}` behavior.
@@ -189,7 +190,7 @@ Instead, we can instruct `sqlc` to **globally** use `date.Date` and
 
 ```yaml
 ---
-version: '2'
+version: "2"
 overrides:
   go:
     overrides:
@@ -237,3 +238,5 @@ doesn't implement a wider set of methods present on `time.Time{}` (e.g.
 [9]: https://github.com/hardfinhq/go-date/actions/workflows/ci.yaml
 [10]: https://docs.sqlc.dev
 [11]: https://pkg.go.dev/github.com/jackc/pgtype
+[12]: https://codecov.io/gh/hardfinhq/go-date/graph/badge.svg?token=MBWYQ3W2RM
+[13]: https://codecov.io/gh/hardfinhq/go-date
