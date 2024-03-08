@@ -51,7 +51,7 @@ jobs:
 
       - name: Go test
         run: |
-          go test ./...
+          go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v4.0.0
