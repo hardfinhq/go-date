@@ -19,7 +19,7 @@ import (
 )
 
 // daysBefore is vendored in from the standard library:
-// https://github.com/golang/go/blob/go1.21.4/src/time/time.go#L1039-L1056
+// https://github.com/golang/go/blob/go1.22.1/src/time/time.go#L1060-L1077
 var daysBefore = [...]int32{
 	0,
 	31,
@@ -37,7 +37,7 @@ var daysBefore = [...]int32{
 }
 
 // daysIn is vendored in from the standard library:
-// https://github.com/golang/go/blob/go1.21.4/src/time/time.go#L1058-L1063
+// https://github.com/golang/go/blob/go1.22.1/src/time/time.go#L1079-L1084
 func daysIn(m time.Month, year int) int {
 	if m == time.February && isLeap(year) {
 		return 29
@@ -46,7 +46,7 @@ func daysIn(m time.Month, year int) int {
 }
 
 // isLeap is vendored in from the standard library:
-// https://github.com/golang/go/blob/go1.21.4/src/time/time.go#L1427-L1429
+// https://github.com/golang/go/blob/go1.22.1/src/time/time.go#L1448-L1450
 func isLeap(year int) bool {
 	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
 }
