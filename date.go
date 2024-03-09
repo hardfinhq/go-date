@@ -251,6 +251,14 @@ func (d Date) ToTime(opts ...ConvertOption) time.Time {
 	return time.Date(d.Year, d.Month, d.Day, cc.Hour, cc.Minute, cc.Second, cc.Nanosecond, cc.Timezone)
 }
 
+// Date returns the year, month, and day in which `d` occurs.
+//
+// This is here for parity with `time.Time{}.Date()` and is likely not
+// needed.
+func (d Date) Date() (int, time.Month, int) {
+	return d.Year, d.Month, d.Day
+}
+
 // ISOWeek returns the ISO 8601 year and week number in which `d` occurs.
 // Week ranges from 1 to 53. Jan 01 to Jan 03 of year `n` might belong to
 // week 52 or 53 of year `n-1`, and Dec 29 to Dec 31 might belong to week 1

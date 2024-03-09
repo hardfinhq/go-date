@@ -464,6 +464,17 @@ func TestDate_ToTime(t *testing.T) {
 	assert.Equal(expected, converted)
 }
 
+func TestDate_Date(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d := date.Date{Year: 2006, Month: time.February, Day: 16}
+	year, month, day := d.Date()
+	assert.Equal(2006, year)
+	assert.Equal(time.February, month)
+	assert.Equal(16, day)
+}
+
 func TestDate_ISOWeek(t *testing.T) {
 	t.Parallel()
 	assert := testifyrequire.New(t)
