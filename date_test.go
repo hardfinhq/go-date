@@ -507,6 +507,37 @@ func TestDate_Weekday(base *testing.T) {
 	}
 }
 
+func TestDate_YearDay(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     date.Date
+		Expected int
+	}
+
+	cases := []testCase{
+		{Date: date.Date{Year: 2022, Month: time.December, Day: 31}, Expected: 365},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 1}, Expected: 1},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 5}, Expected: 5},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 6}, Expected: 6},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 8}, Expected: 8},
+		{Date: date.Date{Year: 2024, Month: time.December, Day: 31}, Expected: 366},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Date.String(), func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			yearDay := tc.Date.YearDay()
+			assert.Equal(tc.Expected, yearDay)
+		})
+	}
+}
+
 func TestDate_MarshalText(base *testing.T) {
 	base.Parallel()
 

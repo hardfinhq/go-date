@@ -264,6 +264,12 @@ func (d Date) Weekday() time.Weekday {
 	return d.ToTime().Weekday()
 }
 
+// YearDay returns the day of the year specified by `d`, in the range [1,365]
+// for non-leap years, and [1,366] in leap years.
+func (d Date) YearDay() int {
+	return d.ToTime().YearDay()
+}
+
 // MarshalText implements the encoding.TextMarshaler interface.
 func (d Date) MarshalText() ([]byte, error) {
 	return []byte(d.String()), nil
