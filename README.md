@@ -218,6 +218,7 @@ There are several alternative date packages which cover wider date ranges.
 (These packages all use the [proleptic Gregorian calendar][6] to cover the
 historical date ranges.) Some existing packages:
 
+- `cloud.google.com/go/civil` [package][14]
 - `github.com/fxtlabs/date` [package][7]
 - `github.com/rickb777/date` [package][5]
 
@@ -240,3 +241,4 @@ doesn't implement a wider set of methods present on `time.Time{}` (e.g.
 [11]: https://pkg.go.dev/github.com/jackc/pgtype
 [12]: https://codecov.io/gh/hardfinhq/go-date/graph/badge.svg?token=MBWYQ3W2RM
 [13]: https://codecov.io/gh/hardfinhq/go-date
+[14]: https://pkg.go.dev/cloud.google.com/go/civil
