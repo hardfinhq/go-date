@@ -95,6 +95,10 @@ fmt.Println(d.ISOWeek())
 // 2020 9
 fmt.Println(d.Weekday())
 // Saturday
+fmt.Println(d.YearDay())
+// 60
+fmt.Println(d.Date())
+// 2020 February 29
 
 fmt.Println(d.IsZero())
 // false
