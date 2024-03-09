@@ -464,6 +464,17 @@ func TestDate_ToTime(t *testing.T) {
 	assert.Equal(expected, converted)
 }
 
+func TestDate_Date(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	d := date.Date{Year: 2006, Month: time.February, Day: 16}
+	year, month, day := d.Date()
+	assert.Equal(2006, year)
+	assert.Equal(time.February, month)
+	assert.Equal(16, day)
+}
+
 func TestDate_ISOWeek(t *testing.T) {
 	t.Parallel()
 	assert := testifyrequire.New(t)
@@ -503,6 +514,37 @@ func TestDate_Weekday(base *testing.T) {
 
 			weekday := tc.Date.Weekday()
 			assert.Equal(tc.Expected, weekday)
+		})
+	}
+}
+
+func TestDate_YearDay(base *testing.T) {
+	base.Parallel()
+
+	type testCase struct {
+		Date     date.Date
+		Expected int
+	}
+
+	cases := []testCase{
+		{Date: date.Date{Year: 2022, Month: time.December, Day: 31}, Expected: 365},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 1}, Expected: 1},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 5}, Expected: 5},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 6}, Expected: 6},
+		{Date: date.Date{Year: 2023, Month: time.January, Day: 8}, Expected: 8},
+		{Date: date.Date{Year: 2024, Month: time.December, Day: 31}, Expected: 366},
+	}
+
+	for i := range cases {
+		// NOTE: Assign to loop-local (instead of declaring the `tc` variable in
+		//       `range`) to avoid capturing reference to loop variable.
+		tc := cases[i]
+		base.Run(tc.Date.String(), func(t *testing.T) {
+			t.Parallel()
+			assert := testifyrequire.New(t)
+
+			yearDay := tc.Date.YearDay()
+			assert.Equal(tc.Expected, yearDay)
 		})
 	}
 }
