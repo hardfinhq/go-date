@@ -75,9 +75,10 @@ func TestFromTime(base *testing.T) {
 	base.Parallel()
 
 	type testCase struct {
-		Time  string
-		Date  date.Date
-		Error string
+		Time     string
+		Date     date.Date
+		Timezone timezoneMetadata
+		Error    string
 	}
 
 	cases := []testCase{
@@ -90,8 +91,9 @@ func TestFromTime(base *testing.T) {
 			Error: "timestamp contains more than just date information; 2020-05-11T07:10:55.209309302Z",
 		},
 		{
-			Time:  "2022-01-31T00:00:00.000-05:00",
-			Error: "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
+			Time:     "2022-01-31T00:00:00.000-05:00",
+			Timezone: timezoneMetadata{Name: valueToPtr(""), Offset: valueToPtr(-18000)},
+			Error:    "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
 		},
 		{
 			Time:  "2020-05-11T00:00:00.000000001Z",
@@ -121,6 +123,10 @@ func TestFromTime(base *testing.T) {
 
 			timestamp, err := time.Parse(time.RFC3339Nano, tc.Time)
 			assert.Nil(err)
+
+			name, offset := timestamp.Zone()
+			assert.Equal(tc.Timezone.ExpectedName(), name)
+			assert.Equal(tc.Timezone.ExpectedOffset(), offset)
 
 			d, err := date.FromTime(timestamp)
 			if tc.Error == "" {
@@ -173,4 +179,32 @@ func TestInTimezone(base *testing.T) {
 			assert.Equal(expected, d)
 		})
 	}
+}
+
+// timezoneMetadata is a struct that contains timezone metadata for assertions
+// and translation across timezones. Intended to be used with `TestFromTime()`.
+type timezoneMetadata struct {
+	Name   *string
+	Offset *int
+}
+
+// ExpectedName returns the expected timezone name.
+func (tm timezoneMetadata) ExpectedName() string {
+	if tm.Name != nil {
+		return *tm.Name
+	}
+	return "UTC"
+}
+
+// ExpectedOffset returns the expected timezone offset in seconds.
+func (tm timezoneMetadata) ExpectedOffset() int {
+	if tm.Offset != nil {
+		return *tm.Offset
+	}
+	return 0
+}
+
+// valueToPtr is a generic function that returns a pointer to the given value.
+func valueToPtr[T any](v T) *T {
+	return &v
 }
