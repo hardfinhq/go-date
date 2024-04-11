@@ -101,6 +101,11 @@ func TestFromTime(base *testing.T) {
 			Error:    "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
 		},
 		{
+			Time:     "2024-01-11T00:00:00.000-06:00",
+			Timezone: timezoneMetadata{Name: valueToPtr("CST"), Offset: valueToPtr(-21600)},
+			Error:    "timestamp contains more than just date information; 2024-01-11T00:00:00-06:00",
+		},
+		{
 			Time:     "2024-04-11T00:00:00.000-05:00",
 			Timezone: timezoneMetadata{Name: valueToPtr("CDT"), Offset: valueToPtr(-18000)},
 			Error:    "timestamp contains more than just date information; 2024-04-11T00:00:00-05:00",
@@ -220,10 +225,12 @@ func (tm timezoneMetadata) In(assert *testifyrequire.Assertions, t time.Time) ti
 
 // ExpectedName returns the expected timezone name.
 func (tm timezoneMetadata) ExpectedName() string {
-	if tm.Name != nil {
-		return *tm.Name
+	if tm.Name == nil {
+		return "UTC"
 	}
-	return "UTC"
+
+	name := *tm.Name
+	return name
 }
 
 // ExpectedOffset returns the expected timezone offset in seconds.
