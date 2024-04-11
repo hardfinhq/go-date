@@ -101,6 +101,16 @@ func TestFromTime(base *testing.T) {
 			Error:    "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
 		},
 		{
+			Time:     "2024-04-11T00:00:00.000-05:00",
+			Timezone: timezoneMetadata{Name: valueToPtr("CDT"), Offset: valueToPtr(-18000)},
+			Error:    "timestamp contains more than just date information; 2024-04-11T00:00:00-05:00",
+		},
+		{
+			Time:     "2024-04-11T05:00:00.000Z",
+			Timezone: timezoneMetadata{InTimezone: valueToPtr("America/Chicago"), Name: valueToPtr("CDT"), Offset: valueToPtr(-18000)},
+			Error:    "timestamp contains more than just date information; 2024-04-11T00:00:00-05:00",
+		},
+		{
 			Time:  "2020-05-11T00:00:00.000000001Z",
 			Error: "timestamp contains more than just date information; 2020-05-11T00:00:00.000000001Z",
 		},
