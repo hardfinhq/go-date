@@ -115,7 +115,9 @@ func FromString(s string) (Date, error) {
 // FromTime validates that a `time.Time{}` contains a date and converts it to a
 // `Date{}`.
 func FromTime(t time.Time) (Date, error) {
-	hasLocationInfo := !(t.Location() == time.UTC || t.Location().String() == "")
+	zone, offset := t.Zone()
+
+	hasLocationInfo := !(t.Location() == time.UTC || (zone == "" && offset == 0))
 
 	if t.Hour() != 0 ||
 		t.Minute() != 0 ||
