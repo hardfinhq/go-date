@@ -102,12 +102,12 @@ func TestFromTime(base *testing.T) {
 		},
 		{
 			Time:     "2024-01-11T00:00:00.000-06:00",
-			Timezone: timezoneMetadata{Name: valueToPtr("CST"), Offset: valueToPtr(-21600)},
+			Timezone: timezoneMetadata{Name: valueToPtr(""), Offset: valueToPtr(-21600)},
 			Error:    "timestamp contains more than just date information; 2024-01-11T00:00:00-06:00",
 		},
 		{
 			Time:     "2024-04-11T00:00:00.000-05:00",
-			Timezone: timezoneMetadata{Name: valueToPtr("CDT"), Offset: valueToPtr(-18000)},
+			Timezone: timezoneMetadata{Name: valueToPtr(""), Offset: valueToPtr(-18000)},
 			Error:    "timestamp contains more than just date information; 2024-04-11T00:00:00-05:00",
 		},
 		{
@@ -147,7 +147,7 @@ func TestFromTime(base *testing.T) {
 			timestamp = tc.Timezone.In(assert, timestamp)
 
 			name, offset := timestamp.Zone()
-			assert.Equal(tc.Timezone.ExpectedName(), name)
+			assert.Equal(tc.Timezone.ExpectedName(timestamp), name)
 			assert.Equal(tc.Timezone.ExpectedOffset(), offset)
 
 			d, err := date.FromTime(timestamp)
@@ -224,12 +224,17 @@ func (tm timezoneMetadata) In(assert *testifyrequire.Assertions, t time.Time) ti
 }
 
 // ExpectedName returns the expected timezone name.
-func (tm timezoneMetadata) ExpectedName() string {
+func (tm timezoneMetadata) ExpectedName(t time.Time) string {
 	if tm.Name == nil {
 		return "UTC"
 	}
 
 	name := *tm.Name
+	tz := t.Location()
+	if name == "" && tz == time.Local {
+		name, _ = t.Zone()
+	}
+
 	return name
 }
 
