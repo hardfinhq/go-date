@@ -96,6 +96,11 @@ func TestFromTime(base *testing.T) {
 			Error:    "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
 		},
 		{
+			Time:     "2022-01-31T05:00:00.000Z",
+			Timezone: timezoneMetadata{InTimezone: valueToPtr("America/New_York"), Name: valueToPtr("EST"), Offset: valueToPtr(-18000)},
+			Error:    "timestamp contains more than just date information; 2022-01-31T00:00:00-05:00",
+		},
+		{
 			Time:  "2020-05-11T00:00:00.000000001Z",
 			Error: "timestamp contains more than just date information; 2020-05-11T00:00:00.000000001Z",
 		},
@@ -123,6 +128,8 @@ func TestFromTime(base *testing.T) {
 
 			timestamp, err := time.Parse(time.RFC3339Nano, tc.Time)
 			assert.Nil(err)
+
+			timestamp = tc.Timezone.In(assert, timestamp)
 
 			name, offset := timestamp.Zone()
 			assert.Equal(tc.Timezone.ExpectedName(), name)
@@ -184,8 +191,21 @@ func TestInTimezone(base *testing.T) {
 // timezoneMetadata is a struct that contains timezone metadata for assertions
 // and translation across timezones. Intended to be used with `TestFromTime()`.
 type timezoneMetadata struct {
-	Name   *string
-	Offset *int
+	InTimezone *string
+	Name       *string
+	Offset     *int
+}
+
+// In translates a timestamp to an "in timezone" if one is set on this
+// metadata struct.
+func (tm timezoneMetadata) In(assert *testifyrequire.Assertions, t time.Time) time.Time {
+	if tm.InTimezone == nil {
+		return t
+	}
+
+	tz, err := time.LoadLocation(*tm.InTimezone)
+	assert.Nil(err)
+	return t.In(tz)
 }
 
 // ExpectedName returns the expected timezone name.
