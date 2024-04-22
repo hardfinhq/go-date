@@ -115,21 +115,28 @@ func FromString(s string) (Date, error) {
 // FromTime validates that a `time.Time{}` contains a date and converts it to a
 // `Date{}`.
 func FromTime(t time.Time) (Date, error) {
-	zone, offset := t.Zone()
-
-	hasLocationInfo := !(t.Location() == time.UTC || (zone == "" && offset == 0))
-
 	if t.Hour() != 0 ||
 		t.Minute() != 0 ||
 		t.Second() != 0 ||
 		t.Nanosecond() != 0 ||
-		hasLocationInfo {
+		!hasUTCOffset(t) {
 		return Date{}, fmt.Errorf("timestamp contains more than just date information; %s", t.Format(time.RFC3339Nano))
 	}
 
 	year, month, day := t.Date()
 	d := Date{Year: year, Month: month, Day: day}
 	return d, nil
+}
+
+// hasUTCOffset checks if the location (timezone) for a given datetime has
+// an offset equivalent to UTC.
+func hasUTCOffset(t time.Time) bool {
+	if t.Location() == time.UTC {
+		return true
+	}
+
+	zone, offset := t.Zone()
+	return zone == "" && offset == 0
 }
 
 // InTimezone translates a timestamp into a timezone and then captures the date
