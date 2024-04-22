@@ -1,0 +1,8 @@
+### NOTE: The paths in this file match `.gitignore` file patterns.
+### See:
+### - https://git-scm.com/docs/gitignore#_pattern_format
+### - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
+
+# Global / default owners; a later match takes precedence (the last matching
+# pattern takes the most precedence).
+* @hardfinhq/public-go-codeowners
