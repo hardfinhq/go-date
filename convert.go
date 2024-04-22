@@ -115,15 +115,13 @@ func FromString(s string) (Date, error) {
 // FromTime validates that a `time.Time{}` contains a date and converts it to a
 // `Date{}`.
 func FromTime(t time.Time) (Date, error) {
-	zone, offset := t.Zone()
-
-	hasLocationInfo := !(t.Location() == time.UTC || (zone == "" && offset == 0))
+	_, offset := t.Zone()
 
 	if t.Hour() != 0 ||
 		t.Minute() != 0 ||
 		t.Second() != 0 ||
 		t.Nanosecond() != 0 ||
-		hasLocationInfo {
+		offset != 0 {
 		return Date{}, fmt.Errorf("timestamp contains more than just date information; %s", t.Format(time.RFC3339Nano))
 	}
 
