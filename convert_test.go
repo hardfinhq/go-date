@@ -162,6 +162,42 @@ func TestFromTime(base *testing.T) {
 	}
 }
 
+func TestFromTime_UTCVariants(t *testing.T) {
+	t.Parallel()
+	assert := testifyrequire.New(t)
+
+	// 1. Vanilla UTC
+	tz := time.UTC
+	dt := time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
+	d, err := date.FromTime(dt)
+	assert.Nil(err)
+	assert.Equal(date.Date{Year: 2022, Month: time.January, Day: 31}, d)
+
+	// 2. +00:00
+	dt, err = time.Parse(time.RFC3339Nano, "1970-01-01T00:00:00.000+00:00")
+	assert.Nil(err)
+	tz = dt.Location()
+	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
+	d, err = date.FromTime(dt)
+	assert.Nil(err)
+	assert.Equal(date.Date{Year: 2022, Month: time.January, Day: 31}, d)
+
+	// 3. Fixed (no name; offset = 0)
+	tz = time.FixedZone("", 0)
+	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
+	d, err = date.FromTime(dt)
+	assert.Nil(err)
+	assert.Equal(date.Date{Year: 2022, Month: time.January, Day: 31}, d)
+
+	// 4. Fixed (no name; offset != 0)
+	tz = time.FixedZone("", -18000)
+	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
+	d, err = date.FromTime(dt)
+	assert.Equal(date.Date{}, d)
+	assert.NotNil(err)
+	assert.Equal("timestamp contains more than just date information; 2022-01-31T00:00:00-05:00", fmt.Sprintf("%v", err))
+}
+
 func TestInTimezone(base *testing.T) {
 	base.Parallel()
 

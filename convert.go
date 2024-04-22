@@ -135,8 +135,8 @@ func hasUTCOffset(t time.Time) bool {
 		return true
 	}
 
-	zone, offset := t.Zone()
-	return zone == "" && offset == 0
+	name, offset := t.Zone()
+	return name == "" && offset == 0
 }
 
 // InTimezone translates a timestamp into a timezone and then captures the date
