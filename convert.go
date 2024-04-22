@@ -131,12 +131,8 @@ func FromTime(t time.Time) (Date, error) {
 // hasUTCOffset checks if the location (timezone) for a given datetime has
 // an offset equivalent to UTC.
 func hasUTCOffset(t time.Time) bool {
-	if t.Location() == time.UTC {
-		return true
-	}
-
-	name, offset := t.Zone()
-	return name == "" && offset == 0
+	_, offset := t.Zone()
+	return offset == 0
 }
 
 // InTimezone translates a timestamp into a timezone and then captures the date
