@@ -198,19 +198,27 @@ func TestFromTime_UTCVariants(t *testing.T) {
 	assert.Equal("timestamp contains more than just date information; 2022-01-31T00:00:00-05:00", fmt.Sprintf("%v", err))
 
 	// 5. Fixed (named; offset = 0)
-	tz = time.FixedZone("GMT", 0)
+	tz = time.FixedZone("GMT-fixed", 0)
 	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
 	d, err = date.FromTime(dt)
 	assert.Nil(err)
 	assert.Equal(date.Date{Year: 2022, Month: time.January, Day: 31}, d)
 
 	// 6. Fixed (named; offset != 0)
-	tz = time.FixedZone("GMT", -18000)
+	tz = time.FixedZone("GMT-fixed", -18000)
 	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
 	d, err = date.FromTime(dt)
 	assert.Equal(date.Date{}, d)
 	assert.NotNil(err)
 	assert.Equal("timestamp contains more than just date information; 2022-01-31T00:00:00-05:00", fmt.Sprintf("%v", err))
+
+	// 7. Load GMT (not UTC) timezone
+	tz, err = time.LoadLocation("GMT")
+	assert.Nil(err)
+	dt = time.Date(2022, time.January, 31, 0, 0, 0, 0, tz)
+	d, err = date.FromTime(dt)
+	assert.Nil(err)
+	assert.Equal(date.Date{Year: 2022, Month: time.January, Day: 31}, d)
 }
 
 func TestInTimezone(base *testing.T) {
