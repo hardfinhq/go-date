@@ -5,4 +5,4 @@
 
 # Global / default owners; a later match takes precedence (the last matching
 # pattern takes the most precedence).
-* @hardfinhq/go-codeowners
+* @hardfinhq/public-go-codeowners
